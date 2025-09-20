@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS Daily - Your Tech Feed</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fafafa;
+            color: #262626;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #dbdbdb;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 8px 16px;
+        }
+
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 54px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 268px;
+            margin: 0 20px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 16px;
+            background: #efefef;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .feed {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+
+        .post {
+            background: #fff;
+            border: 1px solid #dbdbdb;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 0.4s ease forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .post-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #efefef;
+        }
+
+        .source-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 12px;
+            background: linear-gradient(45deg, #405de6, #833ab4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .post-info {
+            flex: 1;
+        }
+
+        .source-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .post-time {
+            color: #8e8e8e;
+            font-size: 12px;
+        }
+
+        .post-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            background: #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .post-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .post-image:hover img {
+            transform: scale(1.02);
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+
+        .post-content {
+            padding: 16px;
+        }
+
+        .post-actions {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-right: 16px;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .like-count {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .post-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .post-description {
+            color: #262626;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #8e8e8e;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #405de6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .viewport {
+            height: calc(100vh - 70px);
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .viewport::-webkit-scrollbar {
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            .feed {
+                padding: 0;
+                margin: 0;
+            }
+
+            .post {
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+                margin-bottom: 0;
+                border-bottom: 8px solid #fafafa;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">CS Daily</div>
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search topics..." id="searchInput">
+            </div>
+            <div style="width: 24px;"></div>
+        </div>
+    </div>
+
+    <div class="viewport" id="viewport">
+        <div class="feed" id="feed">
+            <!-- Posts will be dynamically loaded here -->
+        </div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 16px;">Loading amazing CS content...</p>
+        </div>
+    </div>
+
+    <script>
+        class CSFeed {
+            constructor() {
+                this.posts = [];
+                this.currentPage = 0;
+                this.isLoading = false;
+                this.viewport = document.getElementById('viewport');
+                this.feed = document.getElementById('feed');
+                this.loading = document.getElementById('loading');
+                this.searchInput = document.getElementById('searchInput');
+                
+                // API endpoints with CORS proxies
+                this.apis = {
+                    hackerNews: 'https://api.allorigins.win/get?url=https://hacker-news.firebaseio.com/v0/',
+                    reddit: 'https://api.allorigins.win/get?url=https://www.reddit.com/r/programming.json',
+                    devTo: 'https://dev.to/api/articles?per_page=10&top=1',
+                    github: 'https://api.github.com/search/repositories?q=language:javascript+stars:>1000&sort=updated&per_page=10'
+                };
+                
+                this.init();
+            }
+
+            init() {
+                this.loadInitialPosts();
+                this.setupInfiniteScroll();
+                this.setupSearch();
+            }
+
+            generateMockPosts(count = 10) {
+                const realTopics = [
+                    { topic: 'Machine Learning', news: [
+                        'OpenAI releases new multimodal AI model with breakthrough capabilities',
+                        'Google DeepMind achieves quantum advantage in protein folding',
+                        'Meta unveils LLaMA 3 with improved reasoning abilities',
+                        'Researchers develop AI that can write and debug code autonomously'
+                    ]},
+                    { topic: 'Web Development', news: [
+                        'React 19 introduces revolutionary concurrent features',
+                        'New CSS Grid Level 3 specification approved by W3C',
+                        'Bun 1.0 runtime challenges Node.js performance benchmarks',
+                        'WebAssembly gains native DOM access capabilities'
+                    ]},
+                    { topic: 'Cybersecurity', news: [
+                        'Critical zero-day vulnerability discovered in popular framework',
+                        'New quantum-resistant encryption standard adopted by NIST',
+                        'Researchers demonstrate AI-powered penetration testing',
+                        'Major cloud provider enhances container security protocols'
+                    ]},
+                    { topic: 'Data Science', news: [
+                        'Apache Arrow 2.0 revolutionizes big data processing speeds',
+                        'New visualization library enables real-time data exploration',
+                        'Breakthrough in federated learning preserves privacy at scale',
+                        'Study reveals bias patterns in leading ML datasets'
+                    ]},
+                    { topic: 'Cloud Computing', news: [
+                        'AWS announces serverless GPU instances for AI workloads',
+                        'Kubernetes 1.30 introduces advanced resource management',
+                        'Edge computing startup raises $100M for IoT platform',
+                        'New container orchestration tool promises 90% cost reduction'
+                    ]},
+                    { topic: 'Quantum Computing', news: [
+                        'IBM unveils 1000-qubit quantum processor milestone',
+                        'Google claims quantum supremacy in optimization problems',
+                        'Startup develops room-temperature quantum computer prototype',
+                        'Quantum internet protocol successfully tested across continents'
+                    ]}
+                ];
+
+                const sources = [
+                    { name: 'TechCrunch', avatar: 'TC', color: '#00D084' },
+                    { name: 'ArXiv', avatar: 'AR', color: '#B31B1B' },
+                    { name: 'MIT News', avatar: 'MIT', color: '#8A8B8C' },
+                    { name: 'IEEE Spectrum', avatar: 'IEEE', color: '#00629B' },
+                    { name: 'Nature Tech', avatar: 'NAT', color: '#4285f4' },
+                    { name: 'Wired', avatar: 'W', color: '#000000' }
+                ];
+
+                const posts = [];
+                for (let i = 0; i < count; i++) {
+                    const topicData = realTopics[Math.floor(Math.random() * realTopics.length)];
+                    const source = sources[Math.floor(Math.random() * sources.length)];
+                    const title = topicData.news[Math.floor(Math.random() * topicData.news.length)];
+                    
+                    const descriptions = [
+                        'This breakthrough has significant implications for the future of computing and could reshape how we approach complex problems.',
+                        'Early benchmarks show remarkable improvements in performance, efficiency, and scalability compared to existing solutions.',
+                        'The research team\'s innovative approach addresses fundamental challenges that have puzzled scientists for decades.',
+                        'Industry leaders are praising this development as a potential game-changer with widespread applications.',
+                        'The open-source community has already begun building upon this foundation with exciting new projects.',
+                        'Beta testing reveals promising results that exceed initial expectations across multiple use cases.',
+                        'This advancement opens up new possibilities for startups and enterprises looking to innovate.',
+                        'Experts predict this technology will become mainstream within the next 2-3 years.'
+                    ];
+                    
+                    posts.push({
+                        id: Date.now() + i + Math.random(),
+                        source: source,
+                        title: title,
+                        description: descriptions[Math.floor(Math.random() * descriptions.length)],
+                        topic: topicData.topic,
+                        likes: Math.floor(Math.random() * 3000) + 100,
+                        time: this.getRandomTime(),
+                        imageUrl: this.getTopicImage(topicData.topic),
+                        tags: this.generateTags(topicData.topic, title),
+                        url: '#'
+                    });
+                }
+                return posts;
+            }
+
+            getTopicImage(topic) {
+                const imageMap = {
+                    'Machine Learning': '🤖',
+                    'Web Development': '🌐',
+                    'Data Science': '📊',
+                    'Cybersecurity': '🔒',
+                    'Cloud Computing': '☁️',
+                    'Mobile Development': '📱',
+                    'DevOps': '⚙️',
+                    'Blockchain': '🔗',
+                    'AI Research': '🧠',
+                    'Software Architecture': '🏗️',
+                    'Database Design': '🗄️',
+                    'UI/UX': '🎨',
+                    'Game Development': '🎮',
+                    'Quantum Computing': '⚛️',
+                    'Computer Vision': '👁️',
+                    'NLP': '💬'
+                };
+                return imageMap[topic] || '💻';
+            }
+
+            generateTags(topic, title) {
+                const allTags = ['trending', 'research', 'breakthrough', 'opensource', 'tutorial', 'news', 'startup', 'framework', 'algorithm', 'performance'];
+                const topicTag = topic.toLowerCase().replace(' ', '');
+                const tags = [topicTag];
+                
+                // Add 1-2 random relevant tags
+                const shuffled = allTags.sort(() => 0.5 - Math.random());
+                tags.push(...shuffled.slice(0, Math.floor(Math.random() * 2) + 1));
+                
+                return tags;
+            }
+
+            getRandomTime() {
+                const minutes = Math.floor(Math.random() * 1440); // Random minutes in a day
+                if (minutes < 60) return `${minutes}m`;
+                if (minutes < 1440) return `${Math.floor(minutes / 60)}h`;
+                return `${Math.floor(minutes / 1440)}d`;
+            }
+
+            async loadInitialPosts() {
+                this.isLoading = true;
+                
+                try {
+                    // Try Dev.to API first (most reliable)
+                    const devToPosts = await this.fetchDevToPosts();
+                    if (devToPosts.length > 0) {
+                        this.posts.push(...devToPosts);
+                        this.renderPosts(devToPosts);
+                    }
+                    
+                    // Try GitHub trending repos
+                    const githubPosts = await this.fetchGitHubPosts();
+                    if (githubPosts.length > 0) {
+                        this.posts.push(...githubPosts);
+                        this.renderPosts(githubPosts);
+                    }
+                    
+                } catch (error) {
+                    console.log('API fetch failed, using enhanced mock data');
+                }
+                
+                // Always add some mock data to ensure content
+                const mockPosts = this.generateMockPosts(8);
+                this.posts.push(...mockPosts);
+                this.renderPosts(mockPosts);
+                
+                this.isLoading = false;
+                this.loading.style.display = 'none';
+            }
+
+            async fetchDevToPosts() {
+                try {
+                    const response = await fetch(this.apis.devTo);
+                    const articles = await response.json();
+                    
+                    return articles.slice(0, 8).map(article => ({
+                        id: article.id,
+                        source: { name: 'Dev.to', avatar: 'DEV', color: '#0A0A0A' },
+                        title: article.title,
+                        description: article.description || article.tag_list.join(' • '),
+                        topic: this.classifyTopic(article.title + ' ' + article.tag_list.join(' ')),
+                        likes: article.positive_reactions_count || Math.floor(Math.random() * 500),
+                        time: this.getTimeAgo(new Date(article.published_at).getTime() / 1000),
+                        imageUrl: this.getTopicImage(this.classifyTopic(article.title)),
+                        tags: article.tag_list.slice(0, 4),
+                        url: article.url
+                    }));
+                } catch (error) {
+                    console.error('Dev.to API error:', error);
+                    return [];
+                }
+            }
+
+            async fetchGitHubPosts() {
+                try {
+                    const response = await fetch(this.apis.github);
+                    const data = await response.json();
+                    
+                    return data.items.slice(0, 5).map(repo => ({
+                        id: repo.id,
+                        source: { name: 'GitHub', avatar: 'GH', color: '#24292e' },
+                        title: repo.name,
+                        description: repo.description || 'Trending repository',
+                        topic: this.classifyTopic(repo.description + ' ' + repo.language),
+                        likes: repo.stargazers_count,
+                        time: this.getTimeAgo(new Date(repo.updated_at).getTime() / 1000),
+                        imageUrl: this.getTopicImage(this.classifyTopic(repo.language || 'Programming')),
+                        tags: [repo.language, 'opensource', 'trending'].filter(Boolean),
+                        url: repo.html_url
+                    }));
+                } catch (error) {
+                    console.error('GitHub API error:', error);
+                    return [];
+                }
+            }
+
+            async loadMorePosts() {
+                if (this.isLoading) return;
+                
+                this.isLoading = true;
+                this.loading.style.display = 'block';
+                
+                // Mix of real API calls and mock data
+                try {
+                    if (this.currentPage % 2 === 0) {
+                        const devPosts = await this.fetchDevToPosts();
+                        if (devPosts.length > 0) {
+                            this.posts.push(...devPosts);
+                            this.renderPosts(devPosts);
+                        }
+                    } else {
+                        const githubPosts = await this.fetchGitHubPosts();
+                        if (githubPosts.length > 0) {
+                            this.posts.push(...githubPosts);
+                            this.renderPosts(githubPosts);
+                        }
+                    }
+                } catch (error) {
+                    console.log('API unavailable, using mock data');
+                }
+                
+                // Always add some mock data for continuous scrolling
+                const mockPosts = this.generateMockPosts(6);
+                this.posts.push(...mockPosts);
+                this.renderPosts(mockPosts);
+                
+                this.currentPage++;
+                this.isLoading = false;
+                this.loading.style.display = 'none';
+            }
+
+            async fetchGitHubPosts() {
+                try {
+                    const response = await fetch(this.apis.github);
+                    const data = await response.json();
+                    
+                    return data.items.slice(0, 5).map(repo => ({
+                        id: repo.id,
+                        source: { name: 'GitHub', avatar: 'GH', color: '#24292e' },
+                        title: repo.name,
+                        description: repo.description || 'Trending repository',
+                        topic: this.classifyTopic(repo.description + ' ' + repo.language),
+                        likes: repo.stargazers_count,
+                        time: this.getTimeAgo(new Date(repo.updated_at).getTime() / 1000),
+                        imageUrl: this.getTopicImage(this.classifyTopic(repo.language || 'Programming')),
+                        tags: [repo.language, 'opensource', 'trending'].filter(Boolean),
+                        url: repo.html_url
+                    }));
+                } catch (error) {
+                    console.error('GitHub API error:', error);
+                    return [];
+                }
+            }
+
+            async fetchHackerNewsPosts(offset = 0) {
+                // Removed - using fallback approach due to CORS issues
+                return [];
+            }
+
+            async fetchRedditPosts() {
+                // Removed - using fallback approach due to CORS issues  
+                return [];
+            }
+
+            classifyTopic(title) {
+                const keywords = {
+                    'Machine Learning': ['ml', 'machine learning', 'neural', 'ai', 'deep learning', 'tensorflow', 'pytorch'],
+                    'Web Development': ['react', 'vue', 'angular', 'javascript', 'css', 'html', 'frontend', 'backend'],
+                    'Data Science': ['data', 'analytics', 'visualization', 'pandas', 'jupyter'],
+                    'Cybersecurity': ['security', 'hack', 'vulnerability', 'crypto', 'encryption'],
+                    'Cloud Computing': ['aws', 'azure', 'docker', 'kubernetes', 'cloud'],
+                    'Mobile Development': ['ios', 'android', 'react native', 'flutter', 'mobile'],
+                    'DevOps': ['devops', 'ci/cd', 'deployment', 'infrastructure'],
+                    'Programming': ['code', 'programming', 'algorithm', 'software', 'development']
+                };
+
+                const titleLower = title.toLowerCase();
+                for (const [topic, words] of Object.entries(keywords)) {
+                    if (words.some(word => titleLower.includes(word))) {
+                        return topic;
+                    }
+                }
+                return 'Programming';
+            }
+
+            generateTagsFromTitle(title) {
+                const commonTags = ['trending', 'discussion', 'news', 'tech'];
+                const words = title.toLowerCase().split(' ');
+                const techTerms = ['api', 'framework', 'library', 'tool', 'platform', 'algorithm', 'database'];
+                
+                const tags = [];
+                techTerms.forEach(term => {
+                    if (words.some(word => word.includes(term))) {
+                        tags.push(term);
+                    }
+                });
+                
+                // Add random common tags
+                tags.push(...commonTags.sort(() => 0.5 - Math.random()).slice(0, 2));
+                return tags.slice(0, 4);
+            }
+
+            getTimeAgo(timestamp) {
+                const now = Math.floor(Date.now() / 1000);
+                const diff = now - timestamp;
+                
+                if (diff < 60) return `${diff}s`;
+                if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+                if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+                return `${Math.floor(diff / 86400)}d`;
+            }
+
+            renderPosts(posts) {
+                posts.forEach((post, index) => {
+                    const postElement = this.createPostElement(post);
+                    postElement.style.animationDelay = `${index * 0.1}s`;
+                    this.feed.appendChild(postElement);
+                });
+            }
+
+            createPostElement(post) {
+                const postDiv = document.createElement('div');
+                postDiv.className = 'post';
+                postDiv.innerHTML = `
+                    <div class="post-header">
+                        <div class="source-avatar" style="background: ${post.source.color}">
+                            ${post.source.avatar}
+                        </div>
+                        <div class="post-info">
+                            <div class="source-name">${post.source.name}</div>
+                            <div class="post-time">${post.time} ago</div>
+                        </div>
+                        <div class="more-btn">⋯</div>
+                    </div>
+                    
+                    <div class="post-image">
+                        <div class="image-placeholder" onclick="window.open('${post.url}', '_blank')">
+                            ${post.imageUrl}
+                            <div class="topic-overlay">${post.topic}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="post-content">
+                        <div class="post-actions">
+                            <button class="action-btn like-btn" onclick="this.classList.toggle('liked')">
+                                <span class="heart">♡</span>
+                                <span class="heart-filled" style="display: none;">❤️</span>
+                            </button>
+                            <button class="action-btn">💬</button>
+                            <button class="action-btn">📤</button>
+                            <div style="flex: 1;"></div>
+                            <button class="action-btn">🔖</button>
+                        </div>
+                        
+                        <div class="like-count">${post.likes.toLocaleString()} likes</div>
+                        
+                        <div class="post-caption">
+                            <span class="source-name">${post.source.name}</span>
+                            <span class="post-title">${post.title}</span>
+                        </div>
+                        
+                        <div class="post-description">${post.description}</div>
+                        
+                        <div class="post-tags">
+                            ${post.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                        </div>
+                        
+                        <div class="view-comments">View all comments</div>
+                    </div>
+                `;
+
+                // Add click handlers
+                const likeBtn = postDiv.querySelector('.like-btn');
+                likeBtn.addEventListener('click', this.handleLike.bind(this));
+
+                return postDiv;
+            }
+
+            handleLike(event) {
+                const btn = event.currentTarget;
+                const heart = btn.querySelector('.heart');
+                const heartFilled = btn.querySelector('.heart-filled');
+                
+                if (btn.classList.contains('liked')) {
+                    heart.style.display = 'inline';
+                    heartFilled.style.display = 'none';
+                    btn.style.color = '#262626';
+                } else {
+                    heart.style.display = 'none';
+                    heartFilled.style.display = 'inline';
+                    btn.style.color = '#ed4956';
+                    
+                    // Heart animation
+                    btn.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        btn.style.transform = 'scale(1)';
+                    }, 150);
+                }
+            }
+
+            setupInfiniteScroll() {
+                this.viewport.addEventListener('scroll', () => {
+                    const { scrollTop, scrollHeight, clientHeight } = this.viewport;
+                    
+                    if (scrollTop + clientHeight >= scrollHeight - 100) {
+                        this.loadMorePosts();
+                    }
+                });
+            }
+
+            setupSearch() {
+                this.searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value.toLowerCase();
+                    const posts = document.querySelectorAll('.post');
+                    
+                    posts.forEach(post => {
+                        const title = post.querySelector('.post-title').textContent.toLowerCase();
+                        const description = post.querySelector('.post-description').textContent.toLowerCase();
+                        const tags = Array.from(post.querySelectorAll('.tag')).map(tag => tag.textContent.toLowerCase()).join(' ');
+                        
+                        if (title.includes(query) || description.includes(query) || tags.includes(query)) {
+                            post.style.display = 'block';
+                        } else {
+                            post.style.display = query ? 'none' : 'block';
+                        }
+                    });
+                });
+            }
+        }
+
+        // Enhanced CSS for better Instagram-like styling
+        const additionalStyles = `
+            .post-header .more-btn {
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                padding: 8px;
+                border-radius: 50%;
+                transition: background 0.2s ease;
+            }
+
+            .post-header .more-btn:hover {
+                background: #f5f5f5;
+            }
+
+            .post-actions {
+                display: flex;
+                align-items: center;
+                margin-bottom: 12px;
+            }
+
+            .action-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                margin-right: 16px;
+                padding: 8px;
+                font-size: 24px;
+                transition: all 0.2s ease;
+                border-radius: 50%;
+            }
+
+            .action-btn:hover {
+                background: #f5f5f5;
+                transform: scale(1.1);
+            }
+
+            .post-caption {
+                margin-bottom: 8px;
+                line-height: 1.4;
+            }
+
+            .post-caption .source-name {
+                font-weight: 600;
+                margin-right: 8px;
+            }
+
+            .view-comments {
+                color: #8e8e8e;
+                font-size: 14px;
+                margin-top: 12px;
+                cursor: pointer;
+            }
+
+            .view-comments:hover {
+                color: #262626;
+            }
+
+            .tag {
+                background: linear-gradient(45deg, #405de6, #833ab4);
+                color: white;
+                padding: 4px 12px;
+                border-radius: 16px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: transform 0.2s ease;
+            }
+
+            .tag:hover {
+                transform: scale(1.05);
+            }
+
+            .image-placeholder {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 72px;
+                position: relative;
+                overflow: hidden;
+                cursor: pointer;
+                transition: transform 0.3s ease;
+            }
+
+            .image-placeholder:hover {
+                transform: scale(1.02);
+            }
+
+            .topic-overlay {
+                position: absolute;
+                bottom: 16px;
+                left: 16px;
+                background: rgba(0,0,0,0.7);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: 600;
+                backdrop-filter: blur(10px);
+            }
+
+            .image-placeholder::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+                animation: shimmer 2s infinite;
+            }
+
+            @keyframes shimmer {
+                0% { left: -100%; }
+                100% { left: 100%; }
+            }
+
+            .post:hover {
+                box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+                transform: translateY(-2px);
+                transition: all 0.3s ease;
+            }
+        `;
+
+        // Add the additional styles
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = additionalStyles;
+        document.head.appendChild(styleSheet);
+
+        // Initialize the feed
+        const feed = new CSFeed();
+
+        // Add some dynamic effects
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add parallax effect to header
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const parallax = document.querySelector('.header');
+                if (parallax) {
+                    parallax.style.transform = `translateY(${scrolled * 0.1}px)`;
+                }
+            });
+
+            // Add smooth scroll behavior
+            document.documentElement.style.scrollBehavior = 'smooth';
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const posts = document.querySelectorAll('.like-count');
+            posts.forEach(post => {
+                if (Math.random() < 0.1) { // 10% chance to update
+                    const currentLikes = parseInt(post.textContent.replace(/\D/g, ''));
+                    const newLikes = currentLikes + Math.floor(Math.random() * 5) + 1;
+                    post.textContent = `${newLikes.toLocaleString()} likes`;
+                    
+                    // Brief highlight effect
+                    post.style.color = '#ed4956';
+                    setTimeout(() => {
+                        post.style.color = '#262626';
+                    }, 500);
+                }
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
