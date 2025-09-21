@@ -21,6 +21,12 @@ Example:
 
 ---
 
+## 📺 Demo Video
+
+I also created a YouTube video demonstrating this project:  
+👉 [Watch the video here](https://www.youtube.com/watch?v=_nGvxsWEiv4)
+
+
 ## 🛠️ Tech Stack
 - **HTML5**  
 - **CSS3** (custom styling, animations, gradients)  
