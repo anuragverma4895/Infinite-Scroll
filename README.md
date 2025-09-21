@@ -1,7 +1,7 @@
 # 🚀 CS Daily - Infinite Scroll Tech Feed  
 
 An **Instagram-like infinite scroll feed** for tech content.  
-Built with **vanilla HTML, CSS, JavaScript** — it fetches live articles from **Dev.to** & **GitHub Trending Repositories**, with **mock data fallback** for smooth experience.
+Built with **vanilla HTML, CSS, JavaScript** — it fetches live articles from **Dev.to** & **GitHub Trending Repositories**, with **mock data fallback** for a smooth experience.  
 
 ---
 
@@ -16,9 +16,8 @@ Built with **vanilla HTML, CSS, JavaScript** — it fetches live articles from *
 ---
 
 ## 📸 Screenshots
-
 Example:  
-![screenshot](./screenshot.png)
+![screenshot](./screenshot.png)  
 
 ---
 
@@ -30,7 +29,7 @@ Example:
 APIs used:  
 - [Dev.to Articles API](https://developers.forem.com/api)  
 - [GitHub Search API](https://docs.github.com/en/rest/search)  
-- Mock posts generator (for fallback + demo data)
+- Mock posts generator (for fallback + demo data)  
 
 ---
 
@@ -39,6 +38,17 @@ APIs used:
    ```bash
    git clone https://github.com/your-username/Infinite-Scroll.git
    cd Infinite-Scroll
-2. Open index.html in your browser.
+   ```
+2. Open `index.html` in your browser.  
+3. Scroll down to load posts infinitely 🔥  
 
-3. Scroll down to load posts infinitely 🔥.
+---
+
+## 📖 Learnings
+- Implemented **infinite scroll** logic using JavaScript.  
+- Worked with **third-party APIs** (Dev.to, GitHub).  
+- Improved **DOM manipulation & event handling** skills.  
+- Learned to design a **responsive and modern UI**.  
+- Gained experience with **mock data for fallback/demo**.  
+
+---
